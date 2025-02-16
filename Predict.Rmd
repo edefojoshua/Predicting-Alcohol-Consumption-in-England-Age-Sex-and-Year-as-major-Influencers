@@ -1,0 +1,65 @@
+---
+title: 'Predicting Alcohol Consumption in England: Age, Sex, and Year as major Influencers'
+author: "Joshua Edefo"
+date: "2025-02-16"
+email: "edefojoshu2000@yahoo.com"
+output: github_document
+---
+The analysis uses a log linear model to predict mean alcohol consumption based on age group, sex, and year using data from the Health Survey for England (2011-2013). The model shows that women consume significantly fewer alcohol units than men, with a difference of -0.60 log units (0.55 units). Older age groups, particularly those aged above 75 years, consume significantly fewer alcohol units than the 16-24 age group, with a difference of -0.45 log units ( 0.64 units) for the above 75 years group. Other age groups, such as 45-54 years, show moderate reductions in consumption compared to the reference group. Year does not significantly affect alcohol consumption, suggesting minimal changes over time. The analysis reveals that age and sex are important factors influencing alcohol consumption, while year has little impact.
+
+Libraries
+```{r a, message=FALSE}
+# Load necessary libraries
+library(tidyverse)
+#install.packages("car")
+library(car)
+library(usethis)
+library(readxl)
+```
+
+Predicting the exposure to drinking alcohol based on age, sex and year
+
+```{r b}
+## Set directory
+setwd("C:\\Users\\joe62\\OneDrive - Aberystwyth University\\Apps\\Desktop\\Destop Folder\\R code\\Extract from Health Survey for England")
+
+# Extract from Health Survey for England (HSE- 2022-Adult-drinking-table)
+
+## Importing the data
+data <- read_excel ("HSE-2022-Adult-drinking-tables_extract.xlsx")
+head(data)
+str(data)
+view(data)
+
+
+## Reshape data to long format for analysis
+data_long <- data %>%
+  gather(key = "year", value = "mean_alcohol_units", year_2011, year_2012, year_2013)
+
+## Create a variable for the age group and sex
+data_long$age_group <- factor(data_long$age_group, levels = unique(data_long$age_group))
+data_long$sex <- factor(data_long$sex, levels = c("Men", "Women", "All adults"))
+data_long$year <- as.factor(data_long$year)
+
+model <- lm(log(mean_alcohol_units) ~ age_group + sex + year, data = data_long)
+
+## Summary of the model
+summary(model)
+
+## Plot the results 
+ggplot(data_long, aes(x = age_group, y = log(mean_alcohol_units), color = sex, group = interaction(sex, year))) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ year) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Log-Transformed Alcohol Consumption by Age, Sex, and Year", 
+       x = "Age Group", y = "Log of Mean Alcohol Units")
+
+```
+
+ession information
+
+```{r c}
+sessionInfo()
+```
+
